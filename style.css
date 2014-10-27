@@ -1,11 +1,29 @@
 
 body {
-	font-size: x-large;
+	font-size: large;
     background-color: aliceblue;
 }
 
-
 a {
-	margin: 12px;
+    text-decoration: none;
+    margin: 8px;
 }
+
+canvas {
+    margin: 16px;
+}
+
+span#sizes, span#drawing, span#shapes {
+    margin-left: 40px;
+}
+
+span#shapeName {
+    width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
 

@@ -1,8 +1,6 @@
 "use strict";
 
-var Game = function (mainDiv, delay, width, height, gridSize) {
-
-  this.delay = delay;
+var Game = function (mainDiv, width, height, gridSize) {
   this.width = width;
   this.height = height;
   this.gridSize = gridSize;
@@ -15,7 +13,13 @@ var Game = function (mainDiv, delay, width, height, gridSize) {
 
   this.canvas.addEventListener("mousedown", function (evt) {
     this.mouseDown = true;
-    this.setSquare(0 | evt.layerX / gridSize, 0 | evt.layerY / gridSize, true);
+    var baseX = 0 | evt.layerX / gridSize;
+    var baseY = 0 | evt.layerY / gridSize;
+    var shapeName = "glider";
+    var shape = shapes[shapeName];
+    for (var idx = 0; idx != shape.length; idx++) {
+      this.setSquare(baseX + shape[idx][0], baseY + shape[idx][1], true);
+    }
     evt.preventDefault();
   }.bind(this));
   this.canvas.addEventListener("mouseup", function (evt) {
@@ -124,12 +128,25 @@ Game.prototype.process = function () {
   this.timeoutId = window.setTimeout(this.process.bind(this), this.delay);
 };
 
-Game.prototype.pause = function () {
+Game.prototype.play = function (delay) {
+
   if (this.timeoutId) {
     window.clearTimeout(this.timeoutId);
     this.timeoutId = null;
-  } else {
+  }
+  this.delay = delay;
+  if (this.delay)
     this.process();
+};
+
+Game.prototype.clear = function () {
+  for (var y = 0; y !== this.height; y++) {
+    for (var x = 0; x !== this.width; x++) {
+      var key = y * this.width + x;
+      if (this.grid[key]) {
+        this.setSquare(x, y, true);
+      }
+    }
   }
 };
 
