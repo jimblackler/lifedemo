@@ -21,7 +21,7 @@ canvas#previewPic {
     vertical-align: bottom;
 }
 
-span#sizes, span#drawing, span#shapes {
+span#sizes, span#drawing, span#shapes, span#modes {
     margin-left: 40px;
 }
 

@@ -3,10 +3,11 @@
 var SATURATION = 0.92;
 var VALUE = 0.88;
 
-var Game = function (mainDiv, width, height, gridSize) {
+var Game = function (mainDiv, width, height, gridSize, colors) {
   this.width = width;
   this.height = height;
   this.gridSize = gridSize;
+  this.colors = colors;
   var totalMargin = 0 | gridSize * 0.20;
   this.gridMarginTL = 0 | totalMargin / 2;
   this.drawGridSize = gridSize - totalMargin;
@@ -40,7 +41,8 @@ var Game = function (mainDiv, width, height, gridSize) {
 
   mainDiv.appendChild(this.canvas);
   this.grid = new Int8Array(width * height);
-  this.hues = new Float32Array(width * height);
+  if (this.colors)
+    this.hues = new Float32Array(width * height);
   this.neighbours = new Int8Array(width * height);
   this.nextToConsider = new Int32Array(width * height);
   for (var idx = 0; idx !== this.nextToConsider.length; idx++)
@@ -150,7 +152,8 @@ Game.prototype.process = function () {
       // as if by reproduction.
       if (neighbours === 3) {
         toSet.push(key);
-        newHues.push(this.getNewHue(key));
+        if (this.colors)
+          newHues.push(this.getNewHue(key));
       }
     }
     key = nextKey;
@@ -159,11 +162,13 @@ Game.prototype.process = function () {
 
   var context = this.canvas.getContext('2d');
 
-
+  context.fillStyle = "White";
   for (var idx = 0; idx !== toClear.length; idx++) {
     var key = toClear[idx];
-    var oldHue = this.hues[key];
-    context.fillStyle = hsvToRgbString(oldHue, 0.03, 1);
+    if (this.colors) {
+      var oldHue = this.hues[key];
+      context.fillStyle = hsvToRgbString(oldHue, 0.06, 1);
+    }
     var x = key % this.width;
     var y = 0 | key / this.width;
     this.grid[key] = false;
@@ -172,15 +177,17 @@ Game.prototype.process = function () {
     this.adjustNeighbours(x, y, -1);
   }
 
-
+  context.fillStyle = "Black";
   for (var idx = 0; idx !== toSet.length; idx++) {
     var key = toSet[idx];
     var x = key % this.width;
     var y = 0 | key / this.width;
 
-    var hue = newHues[idx];
-    context.fillStyle = hsvToRgbString(hue, SATURATION, VALUE);
-    this.hues[key] = hue;
+    if (this.colors) {
+      var hue = newHues[idx];
+      context.fillStyle = hsvToRgbString(hue, SATURATION, VALUE);
+      this.hues[key] = hue;
+    }
     this.grid[key] = true;
     context.fillRect(x * this.gridSize + this.gridMarginTL,
             y * this.gridSize + this.gridMarginTL,
@@ -236,9 +243,14 @@ Game.prototype.setSquare = function (x, y, toggle, hue) {
       this.adjustNeighbours(x, y, -1);
     }
   } else {
+
     this.grid[key] = true;
-    this.hues[key] = hue;
-    context.fillStyle = hsvToRgbString(hue, SATURATION, VALUE);
+    if (this.colors) {
+      this.hues[key] = hue;
+      context.fillStyle = hsvToRgbString(hue, SATURATION, VALUE);
+    } else {
+      context.fillStyle = "Black";
+    }
     context.fillRect(x * this.gridSize + this.gridMarginTL,
             y * this.gridSize + this.gridMarginTL,
         this.drawGridSize, this.drawGridSize);

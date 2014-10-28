@@ -2,10 +2,19 @@
 
 window.random = Math.random;
 
+var width = 0 | gup("width", 230);
+var height = 0 | gup("height", 120);
+var size = 0 | gup("size", 6);
+var colors = gup("colors", 1) == 1;
+var auto = gup("auto", 1) == 1;
+
 var game =
-    new Game(document.getElementById("mainDiv"),
-            0 | gup("w", 100), 0 | gup("h", 100), 0 | gup("s", 10),
-            0 | gup("m", 1));
+    new Game(document.getElementById("mainDiv"), width, height, size, colors);
+
+if (auto) {
+  game.randomize();
+  game.play(1);
+}
 
 function setShapeName() {
   document.getElementById("shapeName").textContent = game.getShapeName();
@@ -62,5 +71,15 @@ document.getElementById("next").addEventListener("click", function (evt) {
   setShapeName();
   evt.preventDefault()
 });
+
+
+var switchMode = document.getElementById("switchMode");
+if (colors)
+  switchMode.textContent = "Black/White";
+else
+  switchMode.textContent = "Color mode";
+switchMode.href = window.location.pathname + "?width=" + width +
+    "&height=" + height + "&size=" + size + "&colors=" + (colors ? 0 : 1) +
+    "&auto=" + auto;
 
 setShapeName();
