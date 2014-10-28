@@ -1,5 +1,8 @@
 "use strict";
 
+var SATURATION = 0.92;
+var VALUE = 0.88;
+
 var Game = function (mainDiv, width, height, gridSize) {
   this.width = width;
   this.height = height;
@@ -37,6 +40,7 @@ var Game = function (mainDiv, width, height, gridSize) {
 
   mainDiv.appendChild(this.canvas);
   this.grid = new Int8Array(width * height);
+  this.hues = new Float32Array(width * height);
   this.neighbours = new Int8Array(width * height);
   this.nextToConsider = new Int32Array(width * height);
   for (var idx = 0; idx !== this.nextToConsider.length; idx++)
@@ -46,9 +50,51 @@ var Game = function (mainDiv, width, height, gridSize) {
 
 Game.prototype.placeShape = function() {
   var shape = shapes[this.shapeNumber].squares;
+  var hue = Math.random();
   for (var idx = 0; idx != shape.length; idx++) {
-    this.setSquare(this.placedShapeX + shape[idx][0], this.placedShapeY + shape[idx][1], true);
+    this.setSquare(this.placedShapeX + shape[idx][0],
+            this.placedShapeY + shape[idx][1], true, hue);
   }
+};
+
+Game.prototype.getNewHue = function(key) {
+  var hueX = 0;
+  var hueY = 0;
+  var processHue = function (x, y) {
+    if (x < 0)
+      x += this.width;
+    else if (x >= this.width)
+      x -= this.width;
+    if (y < 0)
+      y += this.height;
+    else if (y >= this.height)
+      y -= this.height;
+    var key = y * this.width + x;
+    if (!this.grid[key])
+      return;
+    var hue = this.hues[key] * Math.PI * 2;
+    hueX += Math.cos(hue);
+    hueY += Math.sin(hue);
+  }.bind(this);
+  var x = key % this.width;
+  var y = 0 | key / this.width;
+
+  processHue(x - 1, y - 1);
+  processHue(x, y - 1);
+  processHue(x + 1, y - 1);
+  processHue(x - 1, y);
+  processHue(x + 1, y);
+  processHue(x - 1, y + 1);
+  processHue(x, y + 1);
+  processHue(x + 1, y + 1);
+
+  if (hueX == 0 && hueY == 0)
+    return Math.random();
+
+  var hue = Math.atan2(hueY, hueX) / (Math.PI * 2);
+  if (hue < 0)
+   return hue + 1;
+  return hue;
 };
 
 Game.prototype.adjustNeighbours = function (x, y, delta) {
@@ -86,6 +132,7 @@ Game.prototype.process = function () {
   // Record original details.
   var toSet = [];
   var toClear = [];
+  var newHues = [];
   var key = this.firstToConsider;
   while (key !== -1) {
     var nextKey = this.nextToConsider[key];
@@ -101,8 +148,10 @@ Game.prototype.process = function () {
     } else {
       // Any dead cell with exactly three live neighbours becomes a live cell,
       // as if by reproduction.
-      if (neighbours === 3)
+      if (neighbours === 3) {
         toSet.push(key);
+        newHues.push(this.getNewHue(key));
+      }
     }
     key = nextKey;
   }
@@ -110,23 +159,28 @@ Game.prototype.process = function () {
 
   var context = this.canvas.getContext('2d');
 
-  context.fillStyle = "White";
+
   for (var idx = 0; idx !== toClear.length; idx++) {
     var key = toClear[idx];
+    var oldHue = this.hues[key];
+    context.fillStyle = hsvToRgbString(oldHue, 0.03, 1);
     var x = key % this.width;
     var y = 0 | key / this.width;
     this.grid[key] = false;
-    context.fillRect(x * this.gridSize + this.gridMarginTL,
-            y * this.gridSize + this.gridMarginTL,
-        this.drawGridSize, this.drawGridSize);
+    context.fillRect(x * this.gridSize, y * this.gridSize,
+        this.gridSize, this.gridSize);
     this.adjustNeighbours(x, y, -1);
   }
 
-  context.fillStyle = "Black";
+
   for (var idx = 0; idx !== toSet.length; idx++) {
     var key = toSet[idx];
     var x = key % this.width;
     var y = 0 | key / this.width;
+
+    var hue = newHues[idx];
+    context.fillStyle = hsvToRgbString(hue, SATURATION, VALUE);
+    this.hues[key] = hue;
     this.grid[key] = true;
     context.fillRect(x * this.gridSize + this.gridMarginTL,
             y * this.gridSize + this.gridMarginTL,
@@ -153,7 +207,7 @@ Game.prototype.clear = function () {
     for (var x = 0; x !== this.width; x++) {
       var key = y * this.width + x;
       if (this.grid[key]) {
-        this.setSquare(x, y, true);
+        this.setSquare(x, y, true, 0);
       }
     }
   }
@@ -162,17 +216,16 @@ Game.prototype.clear = function () {
 Game.prototype.randomize = function () {
   for (var y = 0; y !== this.height; y++) {
     for (var x = 0; x !== this.width; x++) {
-      if (Math.random() < .5) {
-        this.setSquare(x, y, true);
+      if (Math.random() < 0.5) {
+        var hue = Math.random();
+        this.setSquare(x, y, true, hue);
       }
     }
   }
 };
 
-Game.prototype.setSquare = function (x, y, toggle) {
-
+Game.prototype.setSquare = function (x, y, toggle, hue) {
   var context = this.canvas.getContext('2d');
-
   var key = y * this.width + x;
   if (this.grid[key]) {
     if (toggle) {
@@ -184,7 +237,8 @@ Game.prototype.setSquare = function (x, y, toggle) {
     }
   } else {
     this.grid[key] = true;
-    context.fillStyle = "Blue";
+    this.hues[key] = hue;
+    context.fillStyle = hsvToRgbString(hue, SATURATION, VALUE);
     context.fillRect(x * this.gridSize + this.gridMarginTL,
             y * this.gridSize + this.gridMarginTL,
         this.drawGridSize, this.drawGridSize);
