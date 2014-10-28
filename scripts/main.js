@@ -8,9 +8,8 @@ var game =
             0 | gup("m", 1));
 
 function setShapeName() {
-  document.getElementById("shapeName").innerText = game.getShapeName();
+  document.getElementById("shapeName").textContent = game.getShapeName();
   game.setPreviewPic(document.getElementById("previewPic"));
-
 }
 
 var stopLink = document.getElementById("stop");
