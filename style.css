@@ -9,8 +9,16 @@ a {
     margin: 8px;
 }
 
-canvas {
+a.hidden {
+    visibility: hidden;
+}
+
+canvas#playArea {
     margin: 16px;
+}
+
+canvas#previewPic {
+    vertical-align: bottom;
 }
 
 span#sizes, span#drawing, span#shapes {
