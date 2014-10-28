@@ -11,9 +11,13 @@ var auto = gup("auto", 1) == 1;
 var game =
     new Game(document.getElementById("mainDiv"), width, height, size, colors);
 
+var stopLink = document.getElementById("stop");
+
 if (auto) {
   game.randomize();
   game.play(1);
+} else {
+  stopLink.className = "hidden";
 }
 
 function setShapeName() {
@@ -21,8 +25,7 @@ function setShapeName() {
   game.setPreviewPic(document.getElementById("previewPic"));
 }
 
-var stopLink = document.getElementById("stop");
-stopLink.className = "hidden";
+
 
 document.getElementById("fast").addEventListener("click", function (evt) {
   stopLink.className = "visible";

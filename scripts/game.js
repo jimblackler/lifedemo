@@ -16,15 +16,16 @@ var Game = function (mainDiv, width, height, gridSize, colors) {
   this.canvas.height = height * gridSize;
   this.canvas.id = "playArea";
   this.shapeNumber = 0;
-  var context = this.canvas.getContext('2d');
-  context.fillStyle = "White";
-  context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
 
   this.canvas.addEventListener("mousedown", function (evt) {
     this.mouseDown = true;
+    var x = evt.pageX - this.canvas.offsetLeft;
+    var y = evt.pageY - this.canvas.offsetTop;
 
-    this.placedShapeX = 0 | evt.layerX / gridSize;
-    this.placedShapeY = 0 | evt.layerY / gridSize;
+    this.placedHue = Math.random();
+    this.placedShapeX = 0 | x / gridSize;
+    this.placedShapeY = 0 | y / gridSize;
     this.placeShape();
     evt.preventDefault();
   }.bind(this));
@@ -35,7 +36,9 @@ var Game = function (mainDiv, width, height, gridSize, colors) {
   this.canvas.addEventListener("mousemove", function (evt) {
     if (!this.mouseDown)
       return;
-    this.setSquare(0 | evt.layerX / gridSize, 0 | evt.layerY / gridSize, false);
+    var x = evt.pageX - this.canvas.offsetLeft;
+    var y = evt.pageY - this.canvas.offsetTop;
+    this.setSquare(0 | x / gridSize, 0 | y / gridSize, false, this.placedHue);
     evt.preventDefault();
   }.bind(this));
 
@@ -48,14 +51,15 @@ var Game = function (mainDiv, width, height, gridSize, colors) {
   for (var idx = 0; idx !== this.nextToConsider.length; idx++)
     this.nextToConsider[idx] = -2;
   this.firstToConsider = -1;
+  this.clear();
 };
 
 Game.prototype.placeShape = function() {
   var shape = shapes[this.shapeNumber].squares;
-  var hue = Math.random();
+
   for (var idx = 0; idx != shape.length; idx++) {
     this.setSquare(this.placedShapeX + shape[idx][0],
-            this.placedShapeY + shape[idx][1], true, hue);
+            this.placedShapeY + shape[idx][1], true, this.placedHue);
   }
 };
 
@@ -218,6 +222,9 @@ Game.prototype.clear = function () {
       }
     }
   }
+  var context = this.canvas.getContext('2d');
+  context.fillStyle = "White";
+  context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 };
 
 Game.prototype.randomize = function () {
