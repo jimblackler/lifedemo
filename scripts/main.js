@@ -9,7 +9,8 @@ var colors = gup("colors", 1) == 1;
 var auto = gup("auto", 1) == 1;
 
 var game =
-    new Game(document.getElementById("mainDiv"), width, height, size, colors);
+    new Game(document.getElementById("mainDiv"), document.getElementById("fps"),
+        width, height, size, colors);
 
 var stopLink = document.getElementById("stop");
 
@@ -24,8 +25,6 @@ function setShapeName() {
   document.getElementById("shapeName").textContent = game.getShapeName();
   game.setPreviewPic(document.getElementById("previewPic"));
 }
-
-
 
 document.getElementById("fast").addEventListener("click", function (evt) {
   stopLink.className = "visible";

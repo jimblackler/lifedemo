@@ -3,7 +3,7 @@
 var SATURATION = 0.92;
 var VALUE = 0.88;
 
-var Game = function (mainDiv, width, height, gridSize, colors) {
+var Game = function (mainDiv, fpsSpan, width, height, gridSize, colors) {
   this.width = width;
   this.height = height;
   this.gridSize = gridSize;
@@ -15,8 +15,9 @@ var Game = function (mainDiv, width, height, gridSize, colors) {
   this.canvas.width = width * gridSize;
   this.canvas.height = height * gridSize;
   this.canvas.id = "playArea";
+  this.fpsSpan = fpsSpan;
   this.shapeNumber = 0;
-
+  this.times = [];
 
   this.canvas.addEventListener("mousedown", function (evt) {
     this.mouseDown = true;
@@ -133,7 +134,7 @@ Game.prototype.adjustNeighbours = function (x, y, delta) {
 
 
 Game.prototype.process = function () {
-  this.timeoutId = null;
+  this.timeoutId = window.setTimeout(this.process.bind(this), this.delay);
   delete this.placedShapeX;
   // Record original details.
   var toSet = [];
@@ -199,7 +200,14 @@ Game.prototype.process = function () {
     this.adjustNeighbours(x, y, +1);
   }
 
-  this.timeoutId = window.setTimeout(this.process.bind(this), this.delay);
+
+  var time = new Date().getTime();
+  while (this.times.length && this.times[0] <  time - 1000) {
+    this.times.shift();
+  }
+  this.times.push(time);
+  this.fpsSpan.textContent = this.times.length + " FPS";
+
 };
 
 Game.prototype.play = function (delay) {

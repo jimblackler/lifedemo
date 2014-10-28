@@ -6,7 +6,7 @@ body {
 
 a {
     text-decoration: none;
-    margin: 8px;
+    margin: 4px;
 }
 
 a.hidden {
@@ -21,8 +21,8 @@ canvas#previewPic {
     vertical-align: bottom;
 }
 
-span#sizes, span#drawing, span#shapes, span#modes {
-    margin-left: 40px;
+span#speeds, span#sizes, span#drawing, span#shapes, span#modes, span#fps {
+    margin-left: 30px;
 }
 
 span#shapeName {
@@ -32,6 +32,10 @@ span#shapeName {
     text-overflow: ellipsis;
     display: inline-block;
     vertical-align: bottom;
+}
+
+span#fps {
+    font-size: small;
 }
 
 
