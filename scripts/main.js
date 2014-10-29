@@ -82,6 +82,6 @@ else
   switchMode.textContent = "Color mode";
 switchMode.href = window.location.pathname + "?width=" + width +
     "&height=" + height + "&size=" + size + "&colors=" + (colors ? 0 : 1) +
-    "&auto=" + auto;
+    "&auto=" + (auto ? 1 : 0);
 
 setShapeName();
