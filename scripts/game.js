@@ -53,11 +53,16 @@ var Game = function (mainDiv, fpsSpan, width, height, gridSize, colors) {
   }.bind(this));
 
   mainDiv.appendChild(this.canvas);
-  this.grid = new Int8Array(width * height);
-  if (this.colors)
-    this.hues = new Float32Array(width * height);
-  this.neighbours = new Int8Array(width * height);
-  this.nextToConsider = new Int32Array(width * height);
+  var cells = width * height;
+  this.grid = new Int8Array(cells);
+  if (this.colors) {
+    this.hues = new Float32Array(cells);
+    this.neighbourHueX = new Float32Array(cells);
+    this.neighbourHueY = new Float32Array(cells);
+  }
+
+  this.neighbours = new Int8Array(cells);
+  this.nextToConsider = new Int32Array(cells);
   for (var idx = 0; idx !== this.nextToConsider.length; idx++)
     this.nextToConsider[idx] = -2;
   this.firstToConsider = -1;
@@ -73,48 +78,8 @@ Game.prototype.placeShape = function() {
   }
 };
 
-Game.prototype.getNewHue = function(key) {
-  var hueX = 0;
-  var hueY = 0;
-  var processHue = function (x, y) {
-    if (x < 0)
-      x += this.width;
-    else if (x >= this.width)
-      x -= this.width;
-    if (y < 0)
-      y += this.height;
-    else if (y >= this.height)
-      y -= this.height;
-    var key = y * this.width + x;
-    if (!this.grid[key])
-      return;
-    var hue = this.hues[key] * Math.PI * 2;
-    hueX += Math.cos(hue);
-    hueY += Math.sin(hue);
-  }.bind(this);
-  var x = key % this.width;
-  var y = 0 | key / this.width;
-
-  processHue(x - 1, y - 1);
-  processHue(x, y - 1);
-  processHue(x + 1, y - 1);
-  processHue(x - 1, y);
-  processHue(x + 1, y);
-  processHue(x - 1, y + 1);
-  processHue(x, y + 1);
-  processHue(x + 1, y + 1);
-
-  if (hueX == 0 && hueY == 0)
-    return Math.random();
-
-  var hue = Math.atan2(hueY, hueX) / (Math.PI * 2);
-  if (hue < 0)
-   return hue + 1;
-  return hue;
-};
-
 Game.prototype.adjustNeighbours = function (x, y, delta) {
-  var adjust = function (x, y, delta) {
+  var adjust = function (x, y, delta, hueX, hueY) {
     if (x < 0)
       x += this.width;
     else if (x >= this.width)
@@ -124,6 +89,11 @@ Game.prototype.adjustNeighbours = function (x, y, delta) {
     else if (y >= this.height)
       y -= this.height;
     var key = y * this.width + x;
+
+    if (this.colors) {
+      this.neighbourHueX[key] += hueX;
+      this.neighbourHueY[key] += hueY;
+    }
     this.neighbours[key] += delta;
     if (this.nextToConsider[key] == -2) {
       this.nextToConsider[key] = this.firstToConsider;
@@ -131,14 +101,20 @@ Game.prototype.adjustNeighbours = function (x, y, delta) {
     }
   }.bind(this);
 
-  adjust(x - 1, y - 1, delta);
-  adjust(x, y - 1, delta);
-  adjust(x + 1, y - 1, delta);
-  adjust(x - 1, y, delta);
-  adjust(x + 1, y, delta);
-  adjust(x - 1, y + 1, delta);
-  adjust(x, y + 1, delta);
-  adjust(x + 1, y + 1, delta);
+  if (this.colors) {
+    var key = y * this.width + x;
+    var hue = this.hues[key] * Math.PI * 2;
+    var hueX = delta * Math.cos(hue);
+    var hueY = delta * Math.sin(hue);
+  }
+  adjust(x - 1, y - 1, delta, hueX, hueY);
+  adjust(x, y - 1, delta, hueX, hueY);
+  adjust(x + 1, y - 1, delta, hueX, hueY);
+  adjust(x - 1, y, delta, hueX, hueY);
+  adjust(x + 1, y, delta, hueX, hueY);
+  adjust(x - 1, y + 1, delta, hueX, hueY);
+  adjust(x, y + 1, delta, hueX, hueY);
+  adjust(x + 1, y + 1, delta, hueX, hueY);
 };
 
 
@@ -166,8 +142,15 @@ Game.prototype.process = function () {
       // as if by reproduction.
       if (neighbours === 3) {
         toSet.push(key);
-        if (this.colors)
-          newHues.push(this.getNewHue(key));
+        if (this.colors) {
+          var hue =
+              Math.atan2(this.neighbourHueY[key], this.neighbourHueX[key]) /
+              (Math.PI * 2);
+          if (hue < 0)
+            hue += 1;
+          newHues.push(hue);
+        }
+
       }
     }
     key = nextKey;
@@ -178,10 +161,10 @@ Game.prototype.process = function () {
 
   context.fillStyle = "White";
   for (var idx = 0; idx !== toClear.length; idx++) {
+
     var key = toClear[idx];
     if (this.colors) {
-      var oldHue = this.hues[key];
-      context.fillStyle = hsvToRgbString(oldHue, 0.06, 1);
+      context.fillStyle = hsvToRgbString(this.hues[key], 0.06, 1);
     }
     var x = key % this.width;
     var y = 0 | key / this.width;
@@ -211,12 +194,18 @@ Game.prototype.process = function () {
 
 
   var time = new Date().getTime();
-  while (this.times.length && this.times[0] <  time - 1000) {
-    this.times.shift();
+  var final = 0;
+  var oneSecondAgo = time - 1000;
+  while (this.times.length && this.times[0] <  oneSecondAgo) {
+    final = this.times.shift();
   }
+  var partial = 0;
+  if (final) {
+    partial = 1 - ((oneSecondAgo - final) / 1000);
+    partial = (0 | partial * 100) / 100;
+  }
+  this.fpsSpan.textContent = "FPS " + (this.times.length + partial);
   this.times.push(time);
-  this.fpsSpan.textContent = this.times.length + " FPS";
-
 };
 
 Game.prototype.play = function (delay) {
