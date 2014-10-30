@@ -4,6 +4,8 @@ the cells are assigned colors with random hues. Newly-created cells take the
 color most similar to the neighbouring cells. When cells die I leave a trace of
 their color in the vacant cell background.
 
+![Colorized Of Life illustration](doc/bigpic.png)
+
 Adding color makes the simulation more striking, and it also vividly illustrates
 how local patches of the simulation share common ancestry.
 
@@ -32,6 +34,8 @@ Demo
 [My demo](1) is written in JavaScript and uses canvas for the graphics. You can
 vary the size of the grid and the update rate with the links at the top of the
 page, as well as toggle the color effect.
+
+![Larger illustration](doc/starpic.png)
 
 When a cell is newly-created a hue is determined which is formed by summing a
 2D vector for each of the three live neighbours' hues; representing the position
