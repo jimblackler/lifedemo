@@ -60,4 +60,3 @@ Any comments or enquiries are welcome at jimblackler@gmail.com.
 [1]: http://jimblackler.net/life
 [2]: http://en.wikipedia.org/wiki/Conway's_Game_of_Life
 [3]: http://www.conwaylife.com/wiki/Main_Page
-[4]: https://github.com/jimblackler/lifedemo
