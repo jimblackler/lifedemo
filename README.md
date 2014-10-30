@@ -54,10 +54,7 @@ As the simulation is so computationally extensive it can act as a benchmark of
 sorts between browsers. At the time of writing, Safari on OS X was giving the
 fastest results.
 
-The source is available on [GitHub][4] and has a GNU license.
-
-As always, any comments or enquiries are welcome here or at
-jimblackler@gmail.com.
+Any comments or enquiries are welcome at jimblackler@gmail.com.
 
 
 [1]: http://jimblackler.net/life
