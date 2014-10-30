@@ -27,6 +27,10 @@ Spaceships, Reflectors and more on [LifeWiki][3] and elsewhere. The small
 library of Life shapes that I include in my simulation were borrowed from the
 excellent resources on LifeWiki.
 
+Life is one of those ideas that is so simple it begs for variations. For my
+project I decided to make an implementation that kept the basic Life rules but
+added colors to the cells.
+
 
 Demo
 ====
