@@ -20,6 +20,8 @@ cell without two or thee neighboring live cells (including diagonals) becomes a
 dead cell on the next turn (or 'generation'). Any dead cell with three
 neighbouring live cells becomes live on the next generation.
 
+![Traditional Game of Life](doc/trad_glider.png)
+
 From those very simple rules arises a fascinating array of complex behavior. The
 menagerie of structures and creatures that can emerge has been studied
 continuously since Conway invented his game. You can read all about Oscillators,
@@ -47,6 +49,10 @@ the circumference of a circle where the angle represents the continuous hue
 value. The hue of the new cell is taken as the angle between the origin and the
 end of the combined vectors (using Math.atan2). This way an 'average' can be
 obtained that does not tend towards any locality on the color spectrum.
+
+As the simulation is so computationally extensive it can act as a benchmark of
+sorts between browsers. At the time of writing, Safari on OS X was giving the
+fastest results.
 
 The source is available on [GitHub][4] and has a GNU license.
 
